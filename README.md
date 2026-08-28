@@ -20,7 +20,6 @@ Verified with `ghcr.io/duriantaco/skylos:4.35.0-python3.11`. All cases below sti
 | `self_import_pkg/` | Package imports its own `celery` submodule | One-node import cycle | `celery worker -A self_import_pkg` needs the side-effect import. Skylos reports `SKY-CIRC` `self_import_pkg → self_import_pkg`. |
 | `django_signals_app/` | `AppConfig.ready()` imports `signals` | Import looks unused | Django only connects `@receiver` handlers if `ready()` imports the module. |
 | `10_empty_admin/admin.py` | Comment-only `admin.py` | `SKY-E002` empty file | Django still loads `<app>/admin.py` when the app is installed. |
-| `grep_budget_withhold/` | `.agents` skill tree + tiny grep budget | 80 unused skill helpers | Grep-verify exceeds `SKYLOS_GREP_BUDGET` and **withholds all dead-code findings**, including `product/billing.py:unused_billing_helper`. Isolated; see that folder's `run.sh`. |
 
 Not reproduced (do not add): Django `class Migration` (known since 4.34.0), Django view `request` / `*args` / `**kwargs` when the view is in `urlpatterns`.
 
@@ -30,15 +29,11 @@ Not reproduced (do not add): Django `class Migration` (known since 4.34.0), Djan
 ./run.sh
 ```
 
-```bash
-./grep_budget_withhold/run.sh
-```
-
 Requires Docker.
 
 ## Expected fix
 
-Skylos should treat these convention-based entry points as live without per-symbol suppressions, and should not fail a gate by discarding the whole dead-code report:
+Skylos should treat these convention-based entry points as live without per-symbol suppressions:
 
 1. **Config modules** — already fixed for gunicorn globals in 4.34.0
 2. **Duck-typed protocols** — methods invoked on values passed to external libraries
@@ -50,4 +45,3 @@ Skylos should treat these convention-based entry points as live without per-symb
 8. **Package side-effect imports** — `from pkg import celery` is not a circular dependency
 9. **`AppConfig.ready()` signal imports** — `import <app>.signals` is load-bearing
 10. **Django `admin.py` stubs** — an empty admin module is a conventional keep
-11. **Grep-verify on large / non-product trees** — default-exclude `.agents` / `.claude`; if the budget expires, report what you have instead of `SKY-ANALYSIS-INCOMPLETE` + exit 2
