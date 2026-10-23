@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-SKYLOS_VERSION=4.35.0-python3.11
+SKYLOS_VERSION="${1:-4.35.0-python3.11}"
 
 docker run --rm \
   -v "${PWD}":/usr/src/app:z,cached \
