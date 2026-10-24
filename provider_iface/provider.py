@@ -1,4 +1,8 @@
-"""Provider interface methods — called via duck typing on the base type."""
+"""Provider interface — duck-typed calls on base type (web-server college_data shape).
+
+schedule_dates is part of the live provider contract but never named at the
+call site below.
+"""
 
 
 class Provider:
@@ -18,12 +22,8 @@ class ConcreteProvider(Provider):
 
 
 def fetch_day(provider: Provider, day: str):
-    # Call sites only see the base type; schedule_dates is contract-only here.
     return provider.scoreboard(day)
 
 
-def run():
-    return fetch_day(ConcreteProvider(), "2026-10-23")
-
-
-RESULT = run()
+# Entry keeps ConcreteProvider / scoreboard live; schedule_dates stays contract-only.
+RESULT = fetch_day(ConcreteProvider(), "2026-10-23")

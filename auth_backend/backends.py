@@ -1,20 +1,13 @@
-"""Authentication backend — referenced only via AUTHENTICATION_BACKENDS string."""
+"""Duck-typed auth backend — mirrors MobileTokenBackend (no ModelBackend/BaseBackend)."""
 
 
-class TokenAuthBackend:
-    """Django looks this up by dotted path from settings."""
+class MobileTokenBackend:
+    """Wired only via AUTHENTICATION_BACKENDS; Django calls authenticate/get_user."""
 
-    def authenticate(self, request, token=None, **kwargs):
-        if token == "ok":
-            return object()
-        return None
+    def authenticate(self, request, user_id=None, token=None):
+        if not user_id or not token:
+            return None
+        return self.get_user(user_id)
 
     def get_user(self, user_id):
-        return None
-
-
-class StaleAuthBackend:
-    """Intentionally unused — should still be reported."""
-
-    def authenticate(self, request, **kwargs):
-        return None
+        return {"id": user_id}

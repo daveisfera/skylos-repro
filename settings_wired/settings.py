@@ -1,4 +1,4 @@
-"""Recognizable Django settings wiring middleware and storage by dotted path."""
+"""Recognizable settings with plain middleware (no MiddlewareMixin) and STORAGES."""
 
 INSTALLED_APPS = ["settings_wired"]
 SECRET_KEY = "x"

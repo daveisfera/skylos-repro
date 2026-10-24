@@ -1,12 +1,10 @@
-"""Processor plugin — loaded by name string via importlib."""
+"""Bare processor class — product convention load, no static importers of the class."""
 
 
 class IntegrateSessions:
-    name = "integrate_sessions"
+    def __init__(self, session, debug=False, **kwargs):
+        self.session = session
+        self.debug = debug
 
-    def process(self, payload: dict) -> dict:
-        return {**payload, "integrated": True}
-
-
-def unused_plugin_hook():
-    return "unused"
+    def process(self):
+        return {"session": self.session, "integrated": True}

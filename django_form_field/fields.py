@@ -1,10 +1,8 @@
-"""Custom form field — used only as a Form class attribute."""
+"""Custom ModelChoiceField — mirrors modernstat.msfacility.fields.FacilityChoiceField."""
 
 from django import forms
 
 
-class FacilityChoiceField(forms.Field):
-    """Subclass kept for form declarations."""
-
-    def clean(self, value):
-        return value
+class FacilityChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return getattr(obj, "scoreboard_name", str(obj))

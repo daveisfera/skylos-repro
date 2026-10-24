@@ -1,67 +1,58 @@
 # Skylos false-positive reproducer
 
-Minimal examples of patterns that [Skylos](https://github.com/duriantaco/skylos) may flag at 80% confidence but are required by framework/runtime conventions. Each file is intentionally free of `# skylos: ignore` comments.
+Minimal examples shaped like **working [awresports/web-server](https://github.com/awresports/web-server) patterns** (not “textbook only” Django). Each file is free of `# skylos: ignore` comments.
 
-Older cases (01–05, 08, 10, signals, self-import) came from awresports apps. Later cases came from web-server unused triage ([`unused-review.md`](unused-review.md)), then were **hardened** to match Skylos’s own Django/importlib fixture shapes (valid package names, real `django.*` / `unittest` imports, recognizable settings with `INSTALLED_APPS` + markers).
+Package names are valid Python identifiers (digit-leading modules break Skylos dotted-path resolution — production never used those). Inheritance, settings layout, and loaders follow the real app.
 
-Upstream tracking: [duriantaco/skylos#1056](https://github.com/duriantaco/skylos/issues/1056).
+Upstream: [duriantaco/skylos#1056](https://github.com/duriantaco/skylos/issues/1056). Source triage: [`unused-review.md`](unused-review.md).
 
-## Verified (2026-10-23, after repro cleanup)
+## Verified (2026-10-24) — web-server-shaped repros on 5.0.0
 
-| Version | Image |
-|---------|-------|
-| Baseline (default) | `ghcr.io/duriantaco/skylos:4.35.0-python3.11` |
-| Latest compared | `ghcr.io/duriantaco/skylos:5.0.0-python3.11` |
+Image: `ghcr.io/duriantaco/skylos:5.0.0-python3.11` (`./run.sh 5.0.0-python3.11`).
 
-### Still false-positive on 5.0.0 (real gaps)
+### Still false-positive on 5.0.0
 
-| Case | Path | What’s flagged |
-|------|------|----------------|
-| 04 | `04_django_url_converter.py` | `register_converter` wrapper |
-| 07 | `template_static_js/` | JS `greet` only loaded via `{% static %}` |
-| 12 | `auth_backend/` | `TokenAuthBackend.authenticate` / `get_user` (class itself is live via settings) |
-| 14 | `test_module/` | `DemoAPITests(unittest.TestCase)` |
+| Path | What’s flagged | Web-server analogue |
+|------|----------------|---------------------|
+| `04_django_url_converter.py` | `register_converter` wrapper | reflective `register_converter` |
+| `template_static_js/` | `greet` export | `{% static %}` / script src only |
+| `auth_backend/` | `MobileTokenBackend.authenticate` / `get_user` | duck-typed backend in `AUTHENTICATION_BACKENDS` (class is live; methods are not) |
+| `logging_infra/` | `JSONFormatter`, `ExtraAdder` | `LOGGING` `"()"` paths in satellite `settings_logging.py` imported into settings |
+| `settings_wired/storage.py` | `MediaStorage.save` | `STORAGES` / storage backend methods |
+| `test_module/` | `DemoAPITests(unittest.TestCase)` | discovered test classes |
 
-### Cleared after repro cleanup (were invalid/stub repros, not analyzer gaps on 5.0.0)
+### Realistic shapes that go quiet on 5.0.0 (fixed or covered for this layout)
 
-Management `Command` (`mgmt_command/`), settings-wired middleware/storage (`settings_wired/`), `LOGGING` formatter (`logging_infra/`), importlib plugin class (`processor_plugin/`), Django form field (`django_form_field/`), template-only model (`model_template/`), provider interface (`provider_iface/`).
+| Path | Pattern |
+|------|---------|
+| `mgmt_command/` | Helper passed to `autoreload.run_with_reloader` (celery_watch) — `_restart_worker` not flagged |
+| `settings_wired/middleware.py` | Plain `RouteMiddleware` + `_matched_route` in `MIDDLEWARE` — class/helper not flagged |
+| `processor_plugin/` | `importlib` + name registry without module-level `RESULT` — `IntegrateSessions` not flagged |
+| `django_form_field/` | `ModelChoiceField.label_from_instance` — not flagged |
+| `model_template/` | Template-only model methods — not flagged |
+| `provider_iface/` | Contract method `schedule_dates` unused at call site — not flagged when provider instance is live |
 
-Intentional true positives still reported: `mgmt_command` → `unused_export_job`; `auth_backend` → `StaleAuthBackend`; `processor_plugin` → `unused_plugin_hook`; `test_module` → `UnusedHelperTests`.
+### Older cases fixed between 4.35.0 and 5.0.0
 
-### Fixed in 5.0.0 vs 4.35.0 (legacy cases)
+Duck-typed wrapper (02), Celery router (08), error-handler/migration params (03, 05), signals import, empty `admin.py` (10). Gunicorn (01) fixed since 4.34.0.
 
-Duck-typed wrapper (02); Celery router + params (08); error-handler / migration unused params (03, 05); signals import; empty `admin.py` (10). Gunicorn config (01) already clean since 4.34.0.
+## Cases (criterion: mirrors web-server)
 
-### Never reproduced as FP (correctly live)
+| Label | Path | Real shape |
+|-------|------|------------|
+| 04 | `04_django_url_converter.py` | Local `register_converter` wrapper |
+| 07 | `template_static_js/` | `{% static 'widget.js' %}` loads ES `export` |
+| 11 | `mgmt_command/` | `autoreload.run_with_reloader(_restart_worker, …)` |
+| 12 | `auth_backend/` | Duck-typed `MobileTokenBackend` (no auth base) |
+| 13 | `settings_wired/` | Plain middleware + `STORAGES` backend |
+| 14 | `test_module/` | `unittest.TestCase` in `tests.py` |
+| 15 | `model_template/` | `{{ record.get_display_name }}` only |
+| 16 | `provider_iface/` | Duck-typed provider; `schedule_dates` never called |
+| 18 | `logging_infra/` | `from …settings_logging import LOGGING` + `"()"` paths |
+| 19 | `processor_plugin/` | Name → module path registry + `import_module` / `getattr` |
+| 20 | `django_form_field/` | `forms.ModelChoiceField.label_from_instance` |
 
-In-file helpers (`in_file_uses/` with module-level `RESULT`); dict-map dynamic dispatch (`dynamic_dispatch/`); cross-file `get_hls_info` (`cross_file_miss/`).
-
-## Cases
-
-| Label | Path | Pattern | Notes |
-|-------|------|---------|-------|
-| 01 | `01_gunicorn_config.py` | Gunicorn config globals | Fixed in 4.34.0 |
-| 02 | `02_duck_typing.py` | Duck-typed external client | Fixed in 5.0.0 |
-| 03 | `03_django_error_handlers.py` | URLconf error handlers | Params fixed in 5.0.0 |
-| 04 | `04_django_url_converter.py` | `register_converter` | **Still FP on 5.0.0** |
-| 05 | `05_django_migration/` | `RunPython` callback params | Fixed in 5.0.0 |
-| 07 | `template_static_js/` | `{% static %}` → JS export | **Still FP on 5.0.0** |
-| 08 | `08_celery_router.py` | Celery `task_routes` | Fixed in 5.0.0 |
-| — | `self_import_pkg/` | Package side-effect import | Circular-import noise |
-| — | `django_signals_app/` | `AppConfig.ready()` signals | Fixed in 5.0.0 |
-| 10 | `10_empty_admin/` | Empty `admin.py` | Fixed in 5.0.0 |
-| 11 | `mgmt_command/` | `management/commands` + `BaseCommand` | Cleared on 5.0.0 after cleanup |
-| 12 | `auth_backend/` | `AUTHENTICATION_BACKENDS` | **Methods still FP**; class live on 5.0.0 |
-| 13 | `settings_wired/` | `MIDDLEWARE` / `STORAGES` | Cleared on 5.0.0 after cleanup |
-| 14 | `test_module/` | `unittest.TestCase` | **Still FP on 5.0.0** |
-| 15 | `model_template/` | Template-only model method | Cleared on 5.0.0 after cleanup |
-| 16 | `provider_iface/` | Provider interface methods | Cleared on 5.0.0 after cleanup |
-| 17 | `in_file_uses/` | Heavy in-file helper uses | Non-repro (correctly live) |
-| 18 | `logging_infra/` | `LOGGING` `"()"` formatter | Cleared on 5.0.0 after cleanup |
-| 19 | `processor_plugin/` | `importlib.import_module` plugin | Cleared on 5.0.0 after cleanup |
-| 20 | `django_form_field/` | Custom `forms.Field` on `Form` | Cleared on 5.0.0 after cleanup |
-| 21 | `dynamic_dispatch/` | Name→callable map | Non-repro (correctly live) |
-| 22 | `cross_file_miss/` | Cross-file import use | Non-repro (correctly live) |
+Plus legacy 01–05, 08, 10, `django_signals_app/`, `self_import_pkg/`, `in_file_uses/`, `dynamic_dispatch/`, `cross_file_miss/`.
 
 ## Run
 
@@ -70,4 +61,4 @@ In-file helpers (`in_file_uses/` with module-level `RESULT`); dict-map dynamic d
 ./run.sh 5.0.0-python3.11     # latest compared here
 ```
 
-Requires Docker. Optional first argument is the GHCR tag after `ghcr.io/duriantaco/skylos:`.
+Requires Docker.

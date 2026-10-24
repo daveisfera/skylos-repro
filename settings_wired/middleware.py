@@ -1,4 +1,11 @@
-"""Middleware class — referenced only via MIDDLEWARE dotted path."""
+"""Plain middleware + in-file helper — mirrors pitchaware.route.RouteMiddleware."""
+
+
+def _matched_route(request) -> str | None:
+    path = getattr(request, "path_info", None) or getattr(request, "path", "")
+    if not path:
+        return None
+    return path.rstrip("/") or "/"
 
 
 class RouteMiddleware:
@@ -6,4 +13,8 @@ class RouteMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        return self.get_response(request)
+        response = self.get_response(request)
+        if route := _matched_route(request):
+            request.META = getattr(request, "META", {})
+            request.META["app.route"] = route
+        return response
