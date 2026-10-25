@@ -1,4 +1,8 @@
-"""Custom test runner — named from a secondary settings module only."""
+"""Custom runners — NoDbTestRunner is only named in a comment on primary settings.
+
+Secondary settings assign a different runner (NoMigrateDiscoverRunner), matching
+consumer pitchaware/settings.py + settings_tests_discover.py.
+"""
 
 
 class DiscoverRunner:
@@ -7,10 +11,17 @@ class DiscoverRunner:
 
 
 class NoDbTestRunner(DiscoverRunner):
-    """Skip DB setup — used when TEST_RUNNER points here from settings_ci."""
+    """Should FLAG — only referenced in a commented TEST_RUNNER line."""
 
     def setup_databases(self, **kwargs):
         pass
 
     def teardown_databases(self, old_config, **kwargs):
         pass
+
+
+class NoMigrateDiscoverRunner(DiscoverRunner):
+    """Assigned from settings_ci — should stay quiet once string entrypoints work."""
+
+    def setup_databases(self, **kwargs):
+        return None

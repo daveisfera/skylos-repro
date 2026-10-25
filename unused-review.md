@@ -107,24 +107,24 @@ Django migration `Migration` classes — loaded by name.
 
 Methods on classes (including client/provider interfaces) — often called dynamically or via subclass.
 
-- `college_data/provider.py:174` — `function` `NcaaClient.schedule_dates`
-- `college_data/provider.py:192` — `function` `NcaaClient.scoreboard`
-- `college_data/provider.py:208` — `function` `NcaaClient.division_teams`
-- `college_data/provider.py:283` — `function` `NcaaClient.game_detail`
-- `college_data/provider.py:294` — `function` `NcaaClient.box_score`
-- `college_data/provider.py:302` — `function` `NcaaClient.play_by_play`
-- `college_data/provider.py:350` — `function` `NjcaaClient.schedule_dates`
-- `college_data/provider.py:383` — `function` `NjcaaClient.scoreboard`
-- `college_data/provider.py:396` — `function` `NjcaaClient.division_teams`
-- `college_data/provider.py:444` — `function` `NjcaaClient.game_detail`
-- `college_data/provider.py:478` — `function` `NjcaaClient.box_score`
-- `college_data/provider.py:482` — `function` `NjcaaClient.play_by_play`
-- `college_data/provider.py:804` — `function` `NaiaClient.schedule_dates`
-- `college_data/provider.py:810` — `function` `NaiaClient.scoreboard`
-- `college_data/provider.py:819` — `function` `NaiaClient.division_teams`
-- `college_data/provider.py:836` — `function` `NaiaClient.game_detail`
-- `college_data/provider.py:839` — `function` `NaiaClient.box_score`
-- `college_data/provider.py:842` — `function` `NaiaClient.play_by_play`
+- `college_data/provider.py:174` — `function` `schedule_dates` (on NcaaClient)
+- `college_data/provider.py:192` — `function` `scoreboard` (on NcaaClient)
+- `college_data/provider.py:208` — `function` `division_teams` (on NcaaClient)
+- `college_data/provider.py:283` — `function` `game_detail` (on NcaaClient)
+- `college_data/provider.py:294` — `function` `box_score` (on NcaaClient)
+- `college_data/provider.py:302` — `function` `play_by_play` (on NcaaClient)
+- `college_data/provider.py:350` — `function` `schedule_dates` (on NjcaaClient)
+- `college_data/provider.py:383` — `function` `scoreboard` (on NjcaaClient)
+- `college_data/provider.py:396` — `function` `division_teams` (on NjcaaClient)
+- `college_data/provider.py:444` — `function` `game_detail` (on NjcaaClient)
+- `college_data/provider.py:478` — `function` `box_score` (on NjcaaClient)
+- `college_data/provider.py:482` — `function` `play_by_play` (on NjcaaClient)
+- `college_data/provider.py:804` — `function` `schedule_dates` (on NaiaClient)
+- `college_data/provider.py:810` — `function` `scoreboard` (on NaiaClient)
+- `college_data/provider.py:819` — `function` `division_teams` (on NaiaClient)
+- `college_data/provider.py:836` — `function` `game_detail` (on NaiaClient)
+- `college_data/provider.py:839` — `function` `box_score` (on NaiaClient)
+- `college_data/provider.py:842` — `function` `play_by_play` (on NaiaClient)
 - `communications/services/gmail_inbound.py:96` — `function` `GmailThreadSyncSummary.to_dict`
 - `facility/forms.py:93` — `function` `JoinFacility.clean`
 - `game/engine/training_mode.py:220` — `function` `TrainingModeKeeper.reset_situation`
@@ -199,23 +199,23 @@ Test modules / TestCase classes.
 
 Confidence 80–89 without a clear no-refs proof — left for a later pass.
 
-- `college_data/provider.py:251` — `function` `NcaaClient._softball_division_teams`
-- `college_data/provider.py:310` — `function` `NcaaClient._graphql`
-- `college_data/provider.py:556` — `function` `NjcaaClient._catalog_sport`
-- `college_data/provider.py:583` — `function` `NjcaaClient._schedule_competitions`
-- `college_data/provider.py:629` — `function` `NjcaaClient._box_source`
-- `college_data/provider.py:638` — `function` `NjcaaClient._normalize_contest`
-- `college_data/provider.py:659` — `function` `NjcaaClient._normalize_participant`
-- `college_data/provider.py:688` — `function` `NjcaaClient._division_team_lookup`
-- `college_data/provider.py:711` — `function` `NjcaaClient._normalize_directory_team`
-- `college_data/provider.py:725` — `function` `NjcaaClient._normalize_box_team`
-- `college_data/provider.py:742` — `function` `NjcaaClient._normalize_player`
-- `college_data/provider.py:759` — `function` `NjcaaClient._apply_box_details`
-- `college_data/provider.py:782` — `function` `NjcaaClient._contest_from_box_source`
-- `college_data/provider.py:889` — `function` `NaiaClient._season_days`
-- `college_data/provider.py:905` — `function` `NaiaClient._scheduled_teams`
-- `college_data/provider.py:922` — `function` `NaiaClient._normalize_event`
-- `college_data/provider.py:958` — `function` `NaiaClient._validate_division`
+- `college_data/provider.py:251` — `function` `_softball_division_teams` (on NcaaClient)
+- `college_data/provider.py:310` — `function` `_graphql` (on NcaaClient)
+- `college_data/provider.py:556` — `function` `_catalog_sport` (on NjcaaClient)
+- `college_data/provider.py:583` — `function` `_schedule_competitions` (on NjcaaClient)
+- `college_data/provider.py:629` — `function` `_box_source` (on NjcaaClient)
+- `college_data/provider.py:638` — `function` `_normalize_contest` (on NjcaaClient)
+- `college_data/provider.py:659` — `function` `_normalize_participant` (on NjcaaClient)
+- `college_data/provider.py:688` — `function` `_division_team_lookup` (on NjcaaClient)
+- `college_data/provider.py:711` — `function` `_normalize_directory_team` (on NjcaaClient)
+- `college_data/provider.py:725` — `function` `_normalize_box_team` (on NjcaaClient)
+- `college_data/provider.py:742` — `function` `_normalize_player` (on NjcaaClient)
+- `college_data/provider.py:759` — `function` `_apply_box_details` (on NjcaaClient)
+- `college_data/provider.py:782` — `function` `_contest_from_box_source` (on NjcaaClient)
+- `college_data/provider.py:889` — `function` `_season_days` (on NaiaClient)
+- `college_data/provider.py:905` — `function` `_scheduled_teams` (on NaiaClient)
+- `college_data/provider.py:922` — `function` `_normalize_event` (on NaiaClient)
+- `college_data/provider.py:958` — `function` `_validate_division` (on NaiaClient)
 - `game/utils/base.py:166` — `function` `CSVImporter._initialize`
 - `game/utils/base.py:1104` — `function` `CSVImporter._validate_non_duplicate`
 - `game/utils/dartfish.py:38` — `function` `DartFishImporter._determine_pitcherid`
@@ -567,7 +567,7 @@ Not a module-level def (skip).
 
 Network hardware provider interface methods.
 
-- `tickets/network_hardware/providers.py:15` — `function` `NotApplicableNetworkHardwareProvider.initialize_field_hardware`
+- `tickets/network_hardware/providers.py:15` — `function` `initialize_field_hardware` (on NotApplicableNetworkHardwareProvider)
 
 ### rtmp-shared-contract (1)
 

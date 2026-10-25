@@ -4,6 +4,9 @@ Hand this file to an agent working in **https://github.com/duriantaco/skylos** (
 
 Do **not** need the full web-server tree. Each case below is a pattern; clone the idea into a tiny fixture under `skylos-repro/` (or `test/` fixtures in skylos) and assert `skylos <fixture> -c 80` is clean except any intentional true positive.
 
+**Fixture validity:** if a soft-key goes quiet in skylos-repro while the consumer canary still FLAGs at `-c 80`, the fixture is **invalid** — harden the literal extract.
+Prefer `lovable_registry/` and `checkout_phone/` over flat HANDLERS+dispatch toys.
+
 ## Already covered — do not re-open
 
 These were the [#1056](https://github.com/duriantaco/skylos/issues/1056) eleven and are addressed (or claimed) by **5.0.0** and/or **PR #1068**. Repro suite already exists in `skylos-repro` / `test/test_django_app_repro_liveness.py`.
@@ -158,7 +161,7 @@ class Command(BaseCommand):
 
 ### P2.3 Provider / duck-typed client methods
 
-**Still flagged:** `college_data/provider.py` — `NcaaClient.schedule_dates`, `.scoreboard`, `.division_teams`, … and `tickets/network_hardware/providers.py` — `NotApplicableNetworkHardwareProvider.initialize_field_hardware`.
+**Still flagged:** `college_data/provider.py` — `schedule_dates` (on NcaaClient), `.scoreboard`, `.division_teams`, … and `tickets/network_hardware/providers.py` — `initialize_field_hardware` (on NotApplicableNetworkHardwareProvider).
 
 **Pattern:** call sites invoke methods on a **base type** or via dynamic dispatch; concrete subclass methods are the real implementations and never named at the call site.
 
@@ -219,7 +222,7 @@ Extend skylos-repro `15_model_template_method/` with:
 
 ## Priority 3 — high-volume analyzer gaps (harder, still valuable)
 
-### P3.1 Same-file / same-module use still reported (`skylos-false-positive-in-file-uses`)
+### P3.1 literal checkout nested serializers Same-file / same-module use still reported (`skylos-false-positive-in-file-uses`)
 
 **~95** keep items still on PR #1068 — symbols with in-module callers that Skylos still marks unused (often `references: 0` while `called_by` lists same-module users).
 
@@ -256,8 +259,8 @@ Mirror existing numbered fixtures:
 | 22 | `22_celery_result_backend_string/` | P1.2 |
 | 23 | `23_test_runner_secondary_settings/` | P1.3 |
 | 24 | `24_management_command_helpers/` | P2.2 |
-| 25 | `25_registry_getattr_handlers/` | P2.4 (Lovable-style) |
-| 26 | `26_same_module_private_helper/` | P3.1 |
+| 25 | `25_lovable_registry_factory/` | P2.4 literal lovable factory getattr+type |
+| 26 | `26_checkout_phone_serializers/` | P3.1 literal checkout nested serializers |
 
 Extend existing `14_test_module`, `15_model_template_method`, `16_provider_interface`, `19_processor_plugin`, `20_django_form_field` rather than duplicating when the gap is “fixture too small.”
 

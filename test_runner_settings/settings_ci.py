@@ -1,10 +1,10 @@
-"""Secondary settings that assign TEST_RUNNER (accept criterion from upstream brief).
+"""Secondary settings assign a DIFFERENT runner — not NoDbTestRunner.
 
-Primary settings.py only has the assignment commented out.
+Assigning NoDbTestRunner here would incorrectly quiet the canary.
 """
 
 INSTALLED_APPS = ["test_runner_settings"]
 SECRET_KEY = "x"
 ROOT_URLCONF = "test_runner_settings.urls"
 
-TEST_RUNNER = "test_runner_settings.nodb_test_runner.NoDbTestRunner"
+TEST_RUNNER = "test_runner_settings.nodb_test_runner.NoMigrateDiscoverRunner"
