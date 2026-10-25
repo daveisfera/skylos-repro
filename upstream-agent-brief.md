@@ -1,7 +1,7 @@
 # Skylos agent brief: fix real large-app FPs (not toy fixtures)
 
 You are working in **https://github.com/duriantaco/skylos** (fork OK).  
-Consumer that still fails: **https://github.com/awresports/web-server** (sibling clone `~/projects/awresports/web-server`).
+Consumer that still fails: a large Django/Celery app checkout the human points you at (local path only; do not put private org names in public PRs).
 
 Prior PRs ([#1059](https://github.com/duriantaco/skylos/pull/1059), [#1068](https://github.com/duriantaco/skylos/pull/1068), [#1072](https://github.com/duriantaco/skylos/pull/1072)) repeatedly:
 
@@ -19,7 +19,7 @@ Then a scan of **web-server at `-c 80`** still flagged the same symbols (or tota
 
 ### A. Consumer canary scan
 
-Clone or use existing `awresports/web-server` on a clean `dev` (or the tree the human names). Run:
+Clone or use the consumer app checkout the human names (clean default branch). Run from that tree:
 
 ```bash
 # From web-server; pin may be 5.0.0 — override by installing YOUR branch into the image:
@@ -93,7 +93,7 @@ Status when last measured (cleanup tree): **5.0.0** vs **`main`** vs **#1072 `fe
 | `get_team_practices` | `api/lovable/queries.py` | same |
 | `IntegrateSessions` | `modernstat/msgame/processors/integrate_sessions.py` | importlib/getattr plugin |
 | `FacilityChoiceField` | `modernstat/msfacility/fields.py` | form field class still unused |
-| `NoDbTestRunner` | `pitchaware/nodb_test_runner.py` | `TEST_RUNNER` often only in secondary/commented settings |
+| `NoDbTestRunner` | `*/nodb_test_runner.py` | `TEST_RUNNER` often only in secondary/commented settings |
 | `CVTrackingRegionAPITests` | `cv_tagging/tests.py` | unittest/Django discovery still failing on this app |
 | `DetectEvalSessionTests` | `cv_tagging/tests.py` | same |
 | `LeagueHomeTestCase` | `league/tests.py` | same |
@@ -106,7 +106,7 @@ Status when last measured (cleanup tree): **5.0.0** vs **`main`** vs **#1072 `fe
 |--------|------|
 | `RedisClusterBackend` | `redishelper/celery_result_backend.py` |
 
-Wire: `result_backend="redishelper.celery_result_backend:RedisClusterBackend"` in `pitchaware/celery.py` (`app.conf.update` / Celery constructor). Colon and dotted forms.
+Wire: `result_backend="…celery_result_backend:RedisClusterBackend"` in the app Celery module (`app.conf.update` / Celery constructor). Colon and dotted forms.
 
 ### Tier 2 — volume buckets (do not claim done until these move)
 
@@ -211,7 +211,7 @@ Private functions in `*/management/commands/*.py` called only from `Command.hand
 
 ## Out of scope
 
-- Editing `awresports/web-server` product code or adding `# skylos: ignore` to silence canaries.
+- Editing the consumer product tree or adding `# skylos: ignore` to silence canaries.
 - Making the entire web-server `--gate` green in one PR (hundreds of remaining findings).
 - Re-opening migrations / middleware / `STORAGES` already quiet on 5.0.0 — unless your PR regresses them.
 

@@ -1,7 +1,7 @@
 """Custom runners — NoDbTestRunner is only named in a comment on primary settings.
 
 Secondary settings assign a different runner (NoMigrateDiscoverRunner), matching
-consumer pitchaware/settings.py + settings_tests_discover.py.
+consumer primary settings + secondary discover settings.
 """
 
 

@@ -90,16 +90,16 @@ This is **not** `AUTHENTICATION_BACKENDS`. Skylos must treat Celery’s `module:
 
 ### P1.3 `TEST_RUNNER` only in a non-default / commented settings module
 
-**Still flagged:** `pitchaware/nodb_test_runner.py` — `NoDbTestRunner`
+**Still flagged:** `project/nodb_test_runner.py` — `NoDbTestRunner`
 
 **Real pattern:** class exists; primary settings may comment it out while another settings module (or docs/CI) still names it:
 
 ```python
 # settings.py
-# TEST_RUNNER = "pitchaware.nodb_test_runner.NoDbTestRunner"
+# TEST_RUNNER = "project.nodb_test_runner.NoDbTestRunner"
 
 # settings_ci.py  (or env-selected module)
-TEST_RUNNER = "pitchaware.nodb_test_runner.NoDbTestRunner"
+TEST_RUNNER = "project.nodb_test_runner.NoDbTestRunner"
 ```
 
 **Accept:** if **any** scanned settings module assigns `TEST_RUNNER` to the dotted path, the class is live. Optional: subclasses of `DiscoverRunner` that override `setup_databases` are convention entrypoints when named from settings.

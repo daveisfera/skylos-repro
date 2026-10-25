@@ -1,4 +1,4 @@
-"""Primary settings — TEST_RUNNER only commented (consumer pitchaware/settings.py)."""
+"""Primary settings — TEST_RUNNER only commented (consumer primary settings shape)."""
 
 INSTALLED_APPS = ["test_runner_settings"]
 SECRET_KEY = "x"
