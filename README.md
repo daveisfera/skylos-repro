@@ -28,21 +28,20 @@ These are the useful “still red” cases for another upstream fix:
 
 ### Added / strengthened but quiet on #1068 (regression guards / already handled)
 
-Keep these so fixes do not regress; they mirror web-server shapes even when already quiet:
+Keep these so fixes do not regress; they mirror large-app shapes even when already quiet:
 
 | Fixture | Pattern |
 |---------|---------|
-| `receiver_signals/` | `@receiver` + `AppConfig.ready()` (P1.1) |
-| `test_runner_settings/` | `TEST_RUNNER` on secondary settings (P1.3) |
-| `mgmt_command_helpers/` | helpers called from `Command.handle` (P2.2) |
-| `mgmt_command/` | `autoreload.run_with_reloader` callback |
-| `registry_getattr/` | nested registry + `getattr(handlers, spec["method"])` (P2.4) |
-| `same_module_helper/` | `_validate_phone` with same-file callers (P3.1) |
-| `django_form_field/` | `FacilityChoiceField` on a Form used from a view |
-| `model_template/` | template-only model methods |
-| `processor_plugin/`, `settings_wired/`, `auth_backend/`, … | earlier #1056 suite |
+| `21_django_receiver_signals/` | nested `AppConfig.ready()` → `pkg.feature.signals` (P1.1) |
+| `22_celery_result_backend_string/` | Celery `app.conf.update(result_backend="mod:Class")` (P1.2) |
+| `23_test_runner_secondary_settings/` | `TEST_RUNNER` on secondary settings module (P1.3) |
+| `24_management_command_helpers/` | helpers called from `Command.handle` (P2.2) |
+| `25_registry_getattr_handlers/` | nested registry + `getattr(module, name)` (P2.4) |
+| `26_same_module_private_helper/` | `_validate_phone` with nested callers + routed view (P3.1) |
+| `receiver_signals/`, `test_runner_settings/`, `mgmt_command_helpers/`, … | earlier named copies of the same themes |
+| `django_form_field/`, `model_template/`, `processor_plugin/`, … | earlier #1056 suite |
 
-If web-server still reports noise in those categories, the production shape is larger (huge command modules, dynamic names without const propagation, etc.) — extend the fixture with a literal snippet from the app rather than deleting it.
+If a large Django app still reports noise in those categories, extend the fixture with a literal snippet rather than deleting it.
 
 ## Run
 
