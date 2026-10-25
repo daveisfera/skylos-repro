@@ -1,3 +1,5 @@
-{# Template-only uses — mirrors model-method-template-risk from unused-review. #}
+{# Template-only uses — no Python call sites for these methods. #}
 <p>{{ record.get_display_name }}</p>
 <p>{{ record.next_steps_message }}</p>
+<p>{{ record.get_current_status_display }}</p>
+<p>{{ record.get_status_display }}</p>

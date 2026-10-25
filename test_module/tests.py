@@ -1,19 +1,27 @@
-"""Test module — unittest discovers TestCase subclasses by convention."""
+"""django.test.TestCase discovery — helpers + imports used only in tests."""
 
-import unittest
+import json
+
+from django.test import TestCase
 
 
 def _expected_label() -> str:
     return "ready"
 
 
-class DemoAPITests(unittest.TestCase):
+def _helper() -> bool:
+    return True
+
+
+class DemoAPITests(TestCase):
     def test_label(self):
-        self.assertEqual(_expected_label(), "ready")
+        payload = json.dumps({"label": _expected_label()})
+        self.assertIn("ready", payload)
+        self.assertTrue(_helper())
 
 
 class UnusedHelperTests:
-    """Not a TestCase — may still be unused noise; keep out of discovery contract."""
+    """Not a TestCase — intentional true positive."""
 
     def check(self):
         return False

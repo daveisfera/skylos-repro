@@ -1,64 +1,57 @@
 # Skylos false-positive reproducer
 
-Minimal examples shaped like **working [awresports/web-server](https://github.com/awresports/web-server) patterns** (not “textbook only” Django). Each file is free of `# skylos: ignore` comments.
+Minimal fixtures shaped like **working large Django app patterns**. See [`upstream-fp-reproducers.md`](upstream-fp-reproducers.md) for the gaps that remain after [#1056](https://github.com/duriantaco/skylos/issues/1056) / [#1068](https://github.com/duriantaco/skylos/pull/1068).
 
-Package names are valid Python identifiers (digit-leading modules break Skylos dotted-path resolution — production never used those). Inheritance, settings layout, and loaders follow the real app.
+Upstream tracking: [#1056](https://github.com/duriantaco/skylos/issues/1056), [#1068](https://github.com/duriantaco/skylos/pull/1068).  
+Agent brief for analyzer fixes: [`AGENT_FIX_BRIEF.md`](AGENT_FIX_BRIEF.md).
 
-Upstream: [duriantaco/skylos#1056](https://github.com/duriantaco/skylos/issues/1056). Source triage: [`unused-review.md`](unused-review.md).
+## Verified (2026-10-24) — strengthened suite
 
-## Verified (2026-10-24) — web-server-shaped repros on 5.0.0
+| Build | How |
+|-------|-----|
+| Released 5.0.0 | `./run.sh 5.0.0-python3.11` |
+| PR #1068 head | `skylos . -c 80 --format concise` from `daveisfera/skylos@fix/django-deadcode-fps-1056` (`68c00c47` when checked) |
 
-Image: `ghcr.io/duriantaco/skylos:5.0.0-python3.11` (`./run.sh 5.0.0-python3.11`).
+### Still false-positive on PR #1068 (and 5.0.0 unless noted)
 
-### Still false-positive on 5.0.0
+These are the useful “still red” cases for another upstream fix:
 
-| Path | What’s flagged | Web-server analogue |
-|------|----------------|---------------------|
-| `04_django_url_converter.py` | `register_converter` wrapper | reflective `register_converter` |
-| `template_static_js/` | `greet` export | `{% static %}` / script src only |
-| `auth_backend/` | `MobileTokenBackend.authenticate` / `get_user` | duck-typed backend in `AUTHENTICATION_BACKENDS` (class is live; methods are not) |
-| `logging_infra/` | `JSONFormatter`, `ExtraAdder` | `LOGGING` `"()"` paths in satellite `settings_logging.py` imported into settings |
-| `settings_wired/storage.py` | `MediaStorage.save` | `STORAGES` / storage backend methods |
-| `test_module/` | `DemoAPITests(unittest.TestCase)` | discovered test classes |
+| Fixture | Flagged | Maps to |
+|---------|---------|---------|
+| `04_django_url_converter.py` | `register_converter` | local django_urls shim (precision pass may still miss) |
+| `template_static_js/` | `greet` | `{% static %}` JS export |
+| `celery_result_backend/` | `RedisClusterBackend` | Celery `result_backend="pkg.mod:Class"` (**new**) |
+| `provider_iface/` | `Provider.schedule_dates` / `division_teams` / `game_detail` / `box_score` / `play_by_play` | multi-method duck-typed client (**strengthened**) |
+| `logging_infra/` | `JSONFormatter`, `ExtraAdder` | satellite `LOGGING` — **FP on 5.0.0 only**; quiet on #1068 |
+| `test_module/` | `DemoAPITests` | django `TestCase` — **FP on 5.0.0 only**; quiet on #1068 |
+| `test_module/` | `UnusedHelperTests` | intentional true positive |
 
-### Realistic shapes that go quiet on 5.0.0 (fixed or covered for this layout)
+### Added / strengthened but quiet on #1068 (regression guards / already handled)
 
-| Path | Pattern |
-|------|---------|
-| `mgmt_command/` | Helper passed to `autoreload.run_with_reloader` (celery_watch) — `_restart_worker` not flagged |
-| `settings_wired/middleware.py` | Plain `RouteMiddleware` + `_matched_route` in `MIDDLEWARE` — class/helper not flagged |
-| `processor_plugin/` | `importlib` + name registry without module-level `RESULT` — `IntegrateSessions` not flagged |
-| `django_form_field/` | `ModelChoiceField.label_from_instance` — not flagged |
-| `model_template/` | Template-only model methods — not flagged |
-| `provider_iface/` | Contract method `schedule_dates` unused at call site — not flagged when provider instance is live |
+Keep these so fixes do not regress; they mirror web-server shapes even when already quiet:
 
-### Older cases fixed between 4.35.0 and 5.0.0
+| Fixture | Pattern |
+|---------|---------|
+| `receiver_signals/` | `@receiver` + `AppConfig.ready()` (P1.1) |
+| `test_runner_settings/` | `TEST_RUNNER` on secondary settings (P1.3) |
+| `mgmt_command_helpers/` | helpers called from `Command.handle` (P2.2) |
+| `mgmt_command/` | `autoreload.run_with_reloader` callback |
+| `registry_getattr/` | nested registry + `getattr(handlers, spec["method"])` (P2.4) |
+| `same_module_helper/` | `_validate_phone` with same-file callers (P3.1) |
+| `django_form_field/` | `FacilityChoiceField` on a Form used from a view |
+| `model_template/` | template-only model methods |
+| `processor_plugin/`, `settings_wired/`, `auth_backend/`, … | earlier #1056 suite |
 
-Duck-typed wrapper (02), Celery router (08), error-handler/migration params (03, 05), signals import, empty `admin.py` (10). Gunicorn (01) fixed since 4.34.0.
-
-## Cases (criterion: mirrors web-server)
-
-| Label | Path | Real shape |
-|-------|------|------------|
-| 04 | `04_django_url_converter.py` | Local `register_converter` wrapper |
-| 07 | `template_static_js/` | `{% static 'widget.js' %}` loads ES `export` |
-| 11 | `mgmt_command/` | `autoreload.run_with_reloader(_restart_worker, …)` |
-| 12 | `auth_backend/` | Duck-typed `MobileTokenBackend` (no auth base) |
-| 13 | `settings_wired/` | Plain middleware + `STORAGES` backend |
-| 14 | `test_module/` | `unittest.TestCase` in `tests.py` |
-| 15 | `model_template/` | `{{ record.get_display_name }}` only |
-| 16 | `provider_iface/` | Duck-typed provider; `schedule_dates` never called |
-| 18 | `logging_infra/` | `from …settings_logging import LOGGING` + `"()"` paths |
-| 19 | `processor_plugin/` | Name → module path registry + `import_module` / `getattr` |
-| 20 | `django_form_field/` | `forms.ModelChoiceField.label_from_instance` |
-
-Plus legacy 01–05, 08, 10, `django_signals_app/`, `self_import_pkg/`, `in_file_uses/`, `dynamic_dispatch/`, `cross_file_miss/`.
+If web-server still reports noise in those categories, the production shape is larger (huge command modules, dynamic names without const propagation, etc.) — extend the fixture with a literal snippet from the app rather than deleting it.
 
 ## Run
 
 ```bash
-./run.sh                      # 4.35.0-python3.11 (default)
-./run.sh 5.0.0-python3.11     # latest compared here
+./run.sh                      # 4.35.0-python3.11
+./run.sh 5.0.0-python3.11     # released 5.0.0
+# PR head (example):
+#   pip install -e /path/to/daveisfera/skylos@fix/django-deadcode-fps-1056
+#   skylos . -c 80 --format concise
 ```
 
-Requires Docker.
+Requires Docker for `./run.sh`.
